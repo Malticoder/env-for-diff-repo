@@ -1,36 +1,49 @@
-
-
-name: CI
-
+name: Create Environment Flow
 
 on:
-  
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Choose environment:"
+        #required: true
+        type: choice
+        default: "none"
+        options:
+          - "dev"
+          - "qa"
 
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  TF_VAR_environment: ${{ github.event.inputs.environment }}
 
 jobs:
-  
-  build:
-   
+  Create-Infrastructure:
     runs-on: ubuntu-latest
-
-    
     steps:
-     
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-     
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
 
-     
-      - name: Run a multi-line script
+      - name: Initialize Terraform
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          cd terraform
+          terraform init -backend-config="${{ github.event.inputs.environment }}.backend.tfvars"
+
+      - name: Terraform Plan
+        run: |
+          cd terraform
+          terraform plan -var="environment=${{ github.event.inputs.environment }}"
+
+      - name: Terraform Apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
+
+
+
+      
