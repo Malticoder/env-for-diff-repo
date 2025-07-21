@@ -37,6 +37,7 @@ jobs:
       - name: Terraform Plan
         run: |
           cd terraform
+          ls -la
           terraform plan -var="environment=${{ github.event.inputs.environment }}"
 
       - name: Terraform Apply
