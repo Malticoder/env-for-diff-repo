@@ -5,7 +5,7 @@ on:
     inputs:
       environment:
         description: "Choose environment:"
-        #required: true
+        required: true
         type: choice
         default: "none"
         options:
