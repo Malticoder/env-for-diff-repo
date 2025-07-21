@@ -32,16 +32,6 @@ jobs:
       - name: Debug - List Folders
         run: ls -R
 
-      - name: Debug - Environment Input
-        run: echo "Environment": ${{ github.event.inputs.environment }}"
-
-      - name: Check Environment Directory
-        run: |
-          if [ ! -d "terraform/${{ github.event.inputs.environment }}" ]; then
-            echo "Directory terraform/${{ github.event.inputs.environment }} does not exist."
-            exit 1
-          fi
-
       - name: Initialize Terraform
         run: |
           cd terraform/${{ github.event.inputs.environment }}
@@ -56,5 +46,6 @@ jobs:
         run: |
           cd terraform/${{ github.event.inputs.environment }}
           terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
-      
-        
+
+
+     
