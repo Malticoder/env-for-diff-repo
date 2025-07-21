@@ -31,13 +31,13 @@ jobs:
 
       - name: Initialize Terraform
         run: |
-          cd terraform/${{ github.event.inputs.environment }}
+          cd terraform
           terraform init -backend-config="${{ github.event.inputs.environment }}.backend.tfvars"
 
       - name: Terraform Plan
         run: |
           cd terraform
-          ls -la
+          
           terraform plan -var="environment=${{ github.event.inputs.environment }}"
 
       - name: Terraform Apply
