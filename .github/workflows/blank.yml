@@ -29,6 +29,9 @@ jobs:
         with:
           terraform_version: 1.7.5
 
+      - name: Debug - List Folders
+        run: ls -R
+
       - name: Initialize Terraform
         run: |
           cd terraform/${{ github.event.inputs.environment }}
@@ -36,15 +39,13 @@ jobs:
 
       - name: Terraform Plan
         run: |
-          cd terraform
-          ls -la
+          cd terraform/${{ github.event.inputs.environment }}
           terraform plan -var="environment=${{ github.event.inputs.environment }}"
 
       - name: Terraform Apply
         run: |
-          cd terraform
+          cd terraform/${{ github.event.inputs.environment }}
           terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
-
 
 
       
