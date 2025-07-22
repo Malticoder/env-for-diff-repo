@@ -24,7 +24,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: terraform
+        working-directory: ./terraform
 
     steps:
       - name: Checkout code
@@ -33,7 +33,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.6.6
+          terraform_version: 1.5.0
 
       - name: Terraform Init
         run: terraform init -backend-config="${{ github.event.inputs.environment }}.tfbackend"
