@@ -24,7 +24,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: terraform/
+        working-directory: terraform/environments/dev/main.tf
 
     steps:
       - name: Checkout code
