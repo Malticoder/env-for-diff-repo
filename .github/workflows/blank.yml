@@ -36,7 +36,7 @@ jobs:
         run: ls -R
 
       - name: change workdir
-        run:  cd terraform/environment/${{ github.event.inputs.environment }}
+        run:  cd terraform/environments/${{ github.event.inputs.environment }}
 
       - name: terraform Init
         run: terraform init -backend-config="${{ github.event.inputs.environment }}.backend.tf"
