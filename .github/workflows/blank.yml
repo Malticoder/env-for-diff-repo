@@ -7,7 +7,7 @@ on:
         description: "Choose environment:"
         required: true
         type: choice
-        default: "none" # Changed default to 'dev' as 'none' is not in options
+        default: "none" 
         options:
           - "dev"
           - "qa"
@@ -27,32 +27,24 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.5.0 # Using 1.5.0 as specified in your snippet
+          terraform_version: 1.5.0 
 
-      - name: Debug - List Folders (Optional, for verifying structure)
-        # This will list the contents of your repository, useful for debugging paths.
+      - name: Debug - List Folders
         run: ls -R
 
       - name: Initialize Terraform
         run: |
-          # IMPORTANT CHANGE: Navigate to the correct nested environment directory
           cd terraform/environment/${{ github.event.inputs.environment }}
-          # Initialize Terraform with the backend configuration for the chosen environment
-          terraform init -backend-config="${{ github.event.inputs.environment }}.backend.tfvars"
+          terraform init -backend-config="${{ github.event.inputs.environment }}.backend.tf"
 
       - name: Terraform Plan
         run: |
-          # IMPORTANT CHANGE: Navigate to the correct nested environment directory
           cd terraform/environment/${{ github.event.inputs.environment }}
-          # Create a Terraform plan for the chosen environment
           terraform plan -var="environment=${{ github.event.inputs.environment }}"
 
       - name: Terraform Apply
-        # The 'if' condition from your previous workflow is removed as 'none' is not an option here.
-        # If you need conditional apply, you can add it back based on your logic.
         run: |
-          # IMPORTANT CHANGE: Navigate to the correct nested environment directory
+        
           cd terraform/environment/${{ github.event.inputs.environment }}
-          # Apply the Terraform changes for the chosen environment
           terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
 
