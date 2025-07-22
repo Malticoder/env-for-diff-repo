@@ -11,34 +11,90 @@ on:
         options:
           - "dev"
           - "qa"
+      action: # New input for Terraform action
+        description: "Choose Terraform action:"
+        required: true
+        type: choice
+        default: "plan"
+        options:
+          - "plan"
+          - "apply"
+          - "destroy"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Define environment variables for AWS credentials.
+    # It's highly recommended to store these as GitHub Secrets.
+    # For example, in your repository settings, add secrets named AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "us-east-1" # Specify your AWS region
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Display chosen environment
+      - name: Display chosen environment and action
         run: |
           echo "The chosen environment is: ${{ github.event.inputs.environment }}"
+          echo "The chosen action is: ${{ github.event.inputs.action }}"
 
-      - name: Conditional step for Dev environment
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0 # Specify your desired Terraform version
+
+      - name: Terraform Init (Dev Environment)
         if: ${{ github.event.inputs.environment == 'dev' }}
         run: |
-          echo "Performing actions specific to the 'dev' environment..."
-          # Add your dev-specific commands here
-          echo "Deploying to development server..."
+          terraform -chdir=terraform/dev init
+        working-directory: ./terraform/dev # Ensure this path is correct for your dev config
 
-      - name: Conditional step for QA environment
+      - name: Terraform Init (QA Environment)
         if: ${{ github.event.inputs.environment == 'qa' }}
         run: |
-          echo "Performing actions specific to the 'qa' environment..."
-          # Add your qa-specific commands here
-          echo "Deploying to QA server..."
+          terraform -chdir=terraform/qa init
+        working-directory: ./terraform/qa # Ensure this path is correct for your qa config
 
-      - name: Run common deployment script
+      - name: Terraform Plan (Dev Environment)
+        if: ${{ github.event.inputs.environment == 'dev' && github.event.inputs.action == 'plan' }}
         run: |
-          echo "Running common deployment script for ${{ github.event.inputs.environment }}..."
-          # You can pass the environment to a script like this:
-          # ./deploy-script.sh ${{ github.event.inputs.environment }}
+          terraform -chdir=terraform/dev plan -out=tfplan
+        working-directory: ./terraform/dev
+
+      - name: Terraform Plan (QA Environment)
+        if: ${{ github.event.inputs.environment == 'qa' && github.event.inputs.action == 'plan' }}
+        run: |
+          terraform -chdir=terraform/qa plan -out=tfplan
+        working-directory: ./terraform/qa
+
+      - name: Terraform Apply (Dev Environment)
+        if: ${{ github.event.inputs.environment == 'dev' && github.event.inputs.action == 'apply' }}
+        run: |
+          terraform -chdir=terraform/dev apply -auto-approve tfplan
+        working-directory: ./terraform/dev
+
+      - name: Terraform Apply (QA Environment)
+        if: ${{ github.event.inputs.environment == 'qa' && github.event.inputs.action == 'apply' }}
+        run: |
+          terraform -chdir=terraform/qa apply -auto-approve tfplan
+        working-directory: ./terraform/qa
+
+      - name: Terraform Destroy (Dev Environment)
+        if: ${{ github.event.inputs.environment == 'dev' && github.event.inputs.action == 'destroy' }}
+        run: |
+          terraform -chdir=terraform/dev destroy -auto-approve
+        working-directory: ./terraform/dev
+
+      - name: Terraform Destroy (QA Environment)
+        if: ${{ github.event.inputs.environment == 'qa' && github.event.inputs.action == 'destroy' }}
+        run: |
+          terraform -chdir=terraform/qa destroy -auto-approve
+        working-directory: ./terraform/qa
+
+      - name: Run common deployment script (Optional)
+        run: |
+          echo "Running common post-Terraform script for ${{ github.event.inputs.environment }}..."
+          # You can add any additional deployment or configuration steps here
