@@ -1,16 +1,17 @@
-name: Create Environment Flow
+name: Deploy Environment
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Choose environment:"
-        #required: true
+        description: "Choose environment"
+        required: true
+        default: "dev"
         type: choice
-        default: "none"
         options:
-          - "dev"
-          - "qa"
+          - dev
+          - qa
+          - prod
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -18,10 +19,15 @@ env:
   TF_VAR_environment: ${{ github.event.inputs.environment }}
 
 jobs:
-  Create-Infrastructure:
+  terraform:
+    name: Deploy Terraform Infrastructure
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform  # Path to your Terraform code
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Terraform
@@ -29,20 +35,21 @@ jobs:
         with:
           terraform_version: 1.7.5
 
-      - name: Initialize Terraform
-        run: |
-          cd terraform
-          terraform init -backend-config="${{ github.event.inputs.environment }}.backend.tfvars"
+      - name: Terraform Init
+        run: terraform init -backend-config="${{ github.event.inputs.environment }}-backend.tfvars"
 
       - name: Terraform Plan
-        run: |
-          cd terraform
-          terraform plan -var="environment=${{ github.event.inputs.environment }}"
+        run: terraform plan -var="environment=${{ github.event.inputs.environment }}"
 
       - name: Terraform Apply
+        if: github.event.inputs.environment != 'prod' # Only auto-apply for non-prod, protect prod
+        run: terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
+
+      - name: Require Manual Approval for Prod
+        if: github.event.inputs.environment == 'prod'
         run: |
-          cd terraform
-          terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
+          echo "Manual approval required for prod. Run apply manually after review."
+
 
 
 
