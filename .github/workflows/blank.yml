@@ -12,13 +12,19 @@ on:
           - "dev"
           - "qa"
 
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  TF_VAR_environment: ${{ github.event.inputs.environment }}
+
 jobs:
-  deploy:
+  terraform:
+    name: Deploy to ${{ github.event.inputs.environment }}
     runs-on: ubuntu-latest
 
     defaults:
       run:
-        working-directory: terraform/.  # Adjust if your .tf files are elsewhere
+        working-directory: terraform/.
 
     steps:
       - name: Checkout code
@@ -27,25 +33,14 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.5.0
-
-      - name: Show selected environment
-        run: echo "Selected environment: ${{ github.event.inputs.environment }}"
+          terraform_version: 1.6.6
 
       - name: Terraform Init
-        run: |
-          ENVIRONMENT=${{ github.event.inputs.environment }}
-          echo "Running terraform init with backend config: ${ENVIRONMENT}.tfbackend"
-          terraform init -backend-config="${ENVIRONMENT}.tfbackend"
+        run: terraform init -backend-config="${{ github.event.inputs.environment }}.tfbackend"
 
       - name: Terraform Plan
-        run: |
-          ENVIRONMENT=${{ github.event.inputs.environment }}
-          echo "Running terraform plan for $ENVIRONMENT"
-          terraform plan -var="environment=$ENVIRONMENT"
+        run: terraform plan -var="environment=${{ github.event.inputs.environment }}"
 
       - name: Terraform Apply
-        run: |
-          ENVIRONMENT=${{ github.event.inputs.environment }}
-          echo "Running terraform apply for $ENVIRONMENT"
-          terraform apply -auto-approve -var="environment=$ENVIRONMENT"
+        if: github.event.inputs.environment != 'none'
+        run: terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
