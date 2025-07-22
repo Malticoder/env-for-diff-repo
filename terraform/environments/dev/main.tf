@@ -5,6 +5,22 @@ locals {
   vpc_id = "vpc-0affcc89643f1e634"
   subnet_id = "subnet-098e8c22744310155"
 }
+provider "aws" {
+    region = "us-east-1"
+  
+}
+
+
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
 module "compute_sg" {
   source = "../../modules/security_group"
 
