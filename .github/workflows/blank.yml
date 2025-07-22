@@ -34,17 +34,17 @@ jobs:
 
       - name: Initialize Terraform
         run: |
-          cd terraform/environment/${{ github.event.inputs.environment }}
+          cd environment
           terraform init -backend-config="${{ github.event.inputs.environment }}.backend.tf"
 
       - name: Terraform Plan
         run: |
-          cd terraform/environment/${{ github.event.inputs.environment }}
+          cd environment
           terraform plan -var="environment=${{ github.event.inputs.environment }}"
 
       - name: Terraform Apply
         run: |
         
-          cd terraform/environment/${{ github.event.inputs.environment }}
+          cd environment
           terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
 
