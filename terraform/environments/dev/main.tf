@@ -5,7 +5,7 @@ locals {
   vpc_id = "vpc-0affcc89643f1e634"
   subnet_id = "subnet-098e8c22744310155"
 }
-module "web_sg" {
+module "compute_sg" {
   source = "../../modules/security_group"
 
   vpc_id = local.vpc_id
@@ -26,7 +26,7 @@ module "web_sg" {
   ]
 }
 
-module "web_ec2" {
+module "compute_ec2" {
   source = "../../modules/ec2"
 
   ami_id           = local.ami_id
