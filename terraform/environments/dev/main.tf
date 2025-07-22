@@ -5,23 +5,8 @@ locals {
   vpc_id = "vpc-0affcc89643f1e634"
   subnet_id = "subnet-098e8c22744310155"
 }
-provider "aws" {
-    region = "us-east-1"
-  
-}
 
-
-terraform {
-  required_version = ">= 1.5.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-module "web_sg" {
+module "compute_sg" {
   source = "../../modules/security_group"
 
   vpc_id = local.vpc_id
@@ -42,7 +27,7 @@ module "web_sg" {
   ]
 }
 
-module "web_ec2" {
+module "compute_ec2" {
   source = "../../modules/ec2"
 
   ami_id           = local.ami_id
@@ -50,4 +35,20 @@ module "web_ec2" {
   security_group_ids = [module.web_sg.security_group_id]
   subnet_id        = local.subnet_id
   environment      = local.environment
+}
+provider "aws" {
+    region = "us-east-1"
+  
+}
+
+
+terraform {
+  required_version = ">= 1.5.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
 }
