@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./terraform  # Path to your Terraform code
+        working-directory: terraform/.  # Path to your Terraform code
 
     steps:
       - name: Checkout code
