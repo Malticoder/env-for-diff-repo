@@ -12,35 +12,33 @@ on:
           - "dev"
           - "qa"
 
-env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  TF_VAR_environment: ${{ github.event.inputs.environment }}
-
 jobs:
-  terraform:
-    name: Deploy to ${{ github.event.inputs.environment }}
+  deploy:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: terraform/
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.5.0
+      - name: Display chosen environment
+        run: |
+          echo "The chosen environment is: ${{ github.event.inputs.environment }}"
 
-      - name: Terraform Init
-        run: terraform init -backend-config="${{ github.event.inputs.environment }}.tfbackend"
+      - name: Conditional step for Dev environment
+        if: ${{ github.event.inputs.environment == 'dev' }}
+        run: |
+          echo "Performing actions specific to the 'dev' environment..."
+          # Add your dev-specific commands here
+          echo "Deploying to development server..."
 
-      - name: Terraform Plan
-        run: terraform plan -var="environment=${{ github.event.inputs.environment }}"
+      - name: Conditional step for QA environment
+        if: ${{ github.event.inputs.environment == 'qa' }}
+        run: |
+          echo "Performing actions specific to the 'qa' environment..."
+          # Add your qa-specific commands here
+          echo "Deploying to QA server..."
 
-      - name: Terraform Apply
-        if: github.event.inputs.environment != 'none'
-        run: terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
+      - name: Run common deployment script
+        run: |
+          echo "Running common deployment script for ${{ github.event.inputs.environment }}..."
+          # You can pass the environment to a script like this:
+          # ./deploy-script.sh ${{ github.event.inputs.environment }}
