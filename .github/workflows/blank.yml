@@ -7,7 +7,7 @@ on:
         description: "Choose environment:"
         required: true
         type: choice
-        default: "none"
+        default: "dev"
         options:
           - "dev"
           - "qa"
@@ -18,34 +18,29 @@ env:
   TF_VAR_environment: ${{ github.event.inputs.environment }}
 
 jobs:
-  Create-Infrastructure:
+  terraform:
+    name: Deploy to ${{ github.event.inputs.environment }}
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.7.5
+          terraform_version: 1.6.6
 
-      - name: Debug - List Folders
-        run: ls -R
-
-      - name: Initialize Terraform
-        run: |
-          cd terraform/${{ github.event.inputs.environment }}
-          terraform init -backend-config="${{ github.event.inputs.environment }}.backend.tfvars"
+      - name: Terraform Init
+        run: terraform init -backend-config="${{ github.event.inputs.environment }}.tfbackend"
 
       - name: Terraform Plan
-        run: |
-          cd terraform/${{ github.event.inputs.environment }}
-          terraform plan -var="environment=${{ github.event.inputs.environment }}"
+        run: terraform plan -var="environment=${{ github.event.inputs.environment }}"
 
       - name: Terraform Apply
-        run: |
-          cd terraform/${{ github.event.inputs.environment }}
-          terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
-
-
-     
+        if: github.event.inputs.environment != 'none'
+        run: terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
