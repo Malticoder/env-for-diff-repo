@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Choose environment:"
+        description: "Choose environments:"
         required: true
         type: choice
         default: "none"
@@ -15,7 +15,7 @@ on:
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  TF_VAR_environment: ${{ github.event.inputs.environment }}
+  TF_VAR_environment: ${{ github.event.inputs.environments }}
 
 jobs:
   Create-Infrastructure:
@@ -34,15 +34,15 @@ jobs:
 
       - name: Initialize Terraform
         run: |
-          cd terraform/${{ github.event.inputs.environment }}
-          terraform init -backend-config="${{ github.event.inputs.environment }}.backend.tfvars"
+          cd terraform/${{ github.event.inputs.environments }}
+          terraform init -backend-config="${{ github.event.inputs.environments }}.backend.tfvars"
 
       - name: Terraform Plan
         run: |
-          cd terraform/${{ github.event.inputs.environment }}
-          terraform plan -var="environment=${{ github.event.inputs.environment }}"
+          cd terraform/${{ github.event.inputs.environments }}
+          terraform plan -var="environments=${{ github.event.inputs.environments }}"
 
       - name: Terraform Apply
         run: |
-          cd terraform/${{ github.event.inputs.environment }}
-          terraform apply -auto-approve -var="environment=${{ github.event.inputs.environment }}"
+          cd terraform/${{ github.event.inputs.environments }}
+          terraform apply -auto-approve -var="environments=${{ github.event.inputs.environments }}"
